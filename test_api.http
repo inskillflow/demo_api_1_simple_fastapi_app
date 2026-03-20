@@ -1,0 +1,228 @@
+# ============================================================
+#  Task Manager API — Test file for VS Code REST Client
+# ============================================================
+#
+#  HOW TO USE IN VS CODE:
+#  1. Install the extension "REST Client" by Humao (id: humao.rest-client)
+#  2. Open this file in VS Code
+#  3. Click "Send Request" that appears above each ### block
+#
+#  HOW TO USE IN POSTMAN:
+#  Import → Raw text → paste the relevant JSON body
+#  Set the method and URL manually
+#
+#  START THE SERVER FIRST:
+#  cd mini_fastapi
+#  pip install -r requirements.txt
+#  uvicorn main:app --reload
+#
+# ============================================================
+
+@baseUrl = http://127.0.0.1:8000
+
+
+# ============================================================
+#  ROOT
+# ============================================================
+
+### GET — Root (check the API is running)
+GET {{baseUrl}}/
+Accept: application/json
+
+
+# ============================================================
+#  GET — Read tasks
+# ============================================================
+
+### GET — All tasks
+GET {{baseUrl}}/tasks
+Accept: application/json
+
+###
+
+### GET — All tasks — filter: completed only
+GET {{baseUrl}}/tasks?completed=true
+Accept: application/json
+
+###
+
+### GET — All tasks — filter: not completed
+GET {{baseUrl}}/tasks?completed=false
+Accept: application/json
+
+###
+
+### GET — All tasks — filter: high priority
+GET {{baseUrl}}/tasks?priority=high
+Accept: application/json
+
+###
+
+### GET — All tasks — combine filters: not completed + high priority
+GET {{baseUrl}}/tasks?completed=false&priority=high
+Accept: application/json
+
+###
+
+### GET — Single task by ID (id=1)
+GET {{baseUrl}}/tasks/1
+Accept: application/json
+
+###
+
+### GET — Single task by ID (id=3)
+GET {{baseUrl}}/tasks/3
+Accept: application/json
+
+###
+
+### GET — Task not found — expect 404
+GET {{baseUrl}}/tasks/999
+Accept: application/json
+
+
+# ============================================================
+#  POST — Create a new task
+# ============================================================
+
+### POST — Create a task (all fields)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Study Pydantic",
+  "description": "Learn how Pydantic validates request bodies in FastAPI",
+  "completed": false,
+  "priority": "high"
+}
+
+###
+
+### POST — Create a task (title only — other fields use defaults)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Quick task with defaults"
+}
+
+###
+
+### POST — Create a task — expect 422 (missing required field: title)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "description": "This will fail because title is missing"
+}
+
+###
+
+### POST — Create a task — expect 422 (wrong type for completed)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Type error test",
+  "completed": "not-a-boolean"
+}
+
+
+# ============================================================
+#  PUT — Replace a task entirely
+# ============================================================
+
+### PUT — Replace task id=1 entirely (all fields must be provided)
+PUT {{baseUrl}}/tasks/1
+Content-Type: application/json
+
+{
+  "title": "Learn FastAPI — UPDATED",
+  "description": "Read docs AND build a real project",
+  "completed": true,
+  "priority": "high"
+}
+
+###
+
+### PUT — Task not found — expect 404
+PUT {{baseUrl}}/tasks/999
+Content-Type: application/json
+
+{
+  "title": "This task does not exist",
+  "description": "Will return 404",
+  "completed": false,
+  "priority": "low"
+}
+
+
+# ============================================================
+#  PATCH — Partially update a task
+# ============================================================
+
+### PATCH — Mark task id=3 as completed (only update one field)
+PATCH {{baseUrl}}/tasks/3
+Content-Type: application/json
+
+{
+  "completed": true
+}
+
+###
+
+### PATCH — Change the priority of task id=4
+PATCH {{baseUrl}}/tasks/4
+Content-Type: application/json
+
+{
+  "priority": "high"
+}
+
+###
+
+### PATCH — Update title AND description of task id=2
+PATCH {{baseUrl}}/tasks/2
+Content-Type: application/json
+
+{
+  "title": "Build a REST API — Done!",
+  "description": "Completed with GET, POST, PUT, PATCH, DELETE"
+}
+
+###
+
+### PATCH — Task not found — expect 404
+PATCH {{baseUrl}}/tasks/999
+Content-Type: application/json
+
+{
+  "completed": true
+}
+
+
+# ============================================================
+#  DELETE — Remove a task
+# ============================================================
+
+### DELETE — Delete task id=4
+DELETE {{baseUrl}}/tasks/4
+Accept: application/json
+
+###
+
+### DELETE — Verify task id=4 is gone — expect 404
+GET {{baseUrl}}/tasks/4
+Accept: application/json
+
+###
+
+### DELETE — Task not found — expect 404
+DELETE {{baseUrl}}/tasks/999
+Accept: application/json
+
+###
+
+### GET — Final state — all tasks after all operations
+GET {{baseUrl}}/tasks
+Accept: application/json
